@@ -79,15 +79,17 @@ impl Dial {
     }
 
     pub fn dial_turn_lands_on_zero(&mut self, dt: &DialTurn) -> bool {
+        // turns the dial according to a DialTurn, and returns a bool
+        // if this turn resulted in the dial landing on zero.
         self.turn_dial(dt);
         return self.dial_location == 0;
     }
 
     pub fn n_dial_turn_passes_zero(&mut self, dt: &DialTurn) -> i64 {
         // the second part of day 1 asks us to count the times that the dial passes 0 on any given turn.
-        // this implementation is perhaps not elegant, but essentially we just enumerate each click as a
-        // dial turn like we previously implemented. then, we can use the previously defined method
-        // for checking whether this turn has landed on zero. we collect those into a vector and take the sum.
+        // this leverages the first day's solution by enumerating a full turn of the dial into a set of
+        // single turns of the dial in the given direction. We then can check each of these for whether
+        // it landed on zero. The sum of these instances is the answer.
         let enumerated_turns: Vec<DialTurn> =
             vec![
                 DialTurn::new(dt.direction, 1);
