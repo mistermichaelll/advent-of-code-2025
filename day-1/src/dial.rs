@@ -9,10 +9,19 @@ pub struct Dial {
     dial_location: i64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub struct DialTurn {
     direction: Direction,
     n_clicks: i64,
+}
+
+impl DialTurn {
+    fn new(direction: Direction, n_clicks: i64) -> DialTurn {
+        DialTurn {
+            direction,
+            n_clicks,
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -66,6 +75,22 @@ impl Dial {
             Direction::Left => self.turn_left(dt.n_clicks),
         }
     }
+
+    pub fn click_passes_zero(&mut self, dt: &DialTurn) -> i64 {
+        let enumerated_turns: Vec<DialTurn> =
+            vec![
+                DialTurn::new(dt.direction, 1);
+                dt.n_clicks.try_into().expect("could not parse to usize.")
+            ];
+
+        enumerated_turns
+            .iter()
+            .filter(|dt| {
+                self.turn_dial(dt);
+                self.dial_location == 0
+            })
+            .count() as i64
+    }
 }
 
 pub fn get_real_password(d: &mut Dial, dial_turns: Vec<DialTurn>) -> i64 {
@@ -78,10 +103,14 @@ pub fn get_real_password(d: &mut Dial, dial_turns: Vec<DialTurn>) -> i64 {
         .count() as i64
 }
 
+pub fn get_new_password_version(d: &mut Dial, dial_turns: Vec<DialTurn>) -> i64 {
+    dial_turns.iter().map(|x| d.click_passes_zero(x)).sum()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::instructions::get_input_instructions;
+    use crate::instructions::{get_input_instructions, parse_instructions};
 
     #[test]
     fn test_example_from_site() {
@@ -105,16 +134,16 @@ mod tests {
     #[test]
     fn test_parse_example_from_site_as_text() {
         let mut d: Dial = Dial::new(50);
-        let instructions: Vec<String> = get_input_instructions("data/test_input.txt");
+        let instructions: Vec<DialTurn> = parse_instructions("data/test_input.txt");
 
-        let parsed_instructions: Vec<DialTurn> = instructions
-            .iter()
-            .map(|v| {
-                v.parse::<DialTurn>()
-                    .expect("could not parse to dial turn.")
-            })
-            .collect();
+        assert_eq!(3, get_real_password(&mut d, instructions))
+    }
 
-        assert_eq!(3, get_real_password(&mut d, parsed_instructions))
+    #[test]
+    fn test_new_password_getter() {
+        let mut d: Dial = Dial::new(50);
+        let instructions: Vec<DialTurn> = parse_instructions("data/test_input.txt");
+
+        assert_eq!(6, get_new_password_version(&mut d, instructions))
     }
 }
