@@ -66,17 +66,16 @@ impl Dial {
             Direction::Left => self.turn_left(dt.n_clicks),
         }
     }
+}
 
 pub fn get_real_password(d: &mut Dial, dial_turns: Vec<DialTurn>) -> i64 {
-    let mut zeros: Vec<i64> = vec![];
-    for dt in dial_turns.iter() {
-        d.turn_dial(dt);
-        if d.dial_location == 0 {
-            zeros.push(1)
-        }
-    }
-    let total_zeros: i64 = zeros.iter().sum();
-    return total_zeros;
+    dial_turns
+        .iter()
+        .filter(|dt| {
+            d.turn_dial(dt);
+            d.dial_location == 0
+        })
+        .count() as i64
 }
 
 #[cfg(test)]
