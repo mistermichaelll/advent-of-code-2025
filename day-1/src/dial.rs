@@ -61,13 +61,11 @@ impl Dial {
     }
 
     pub fn turn_dial(&mut self, dt: &DialTurn) {
-        if dt.direction == Direction::Right {
-            self.turn_right(dt.n_clicks)
-        } else if dt.direction == Direction::Left {
-            self.turn_left(dt.n_clicks)
+        match dt.direction {
+            Direction::Right => self.turn_right(dt.n_clicks),
+            Direction::Left => self.turn_left(dt.n_clicks),
         }
     }
-}
 
 pub fn get_real_password(d: &mut Dial, dial_turns: Vec<DialTurn>) -> i64 {
     let mut zeros: Vec<i64> = vec![];
