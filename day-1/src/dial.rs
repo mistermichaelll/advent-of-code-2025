@@ -53,19 +53,11 @@ impl Dial {
     }
 
     fn turn_right(&mut self, n_clicks: i64) {
-        if self.dial_location + n_clicks > 99 {
-            self.dial_location = (self.dial_location + n_clicks).rem_euclid(99) - 1
-        } else {
-            self.dial_location = self.dial_location + n_clicks
-        }
+        self.dial_location = (self.dial_location + n_clicks).rem_euclid(100)
     }
 
     fn turn_left(&mut self, n_clicks: i64) {
-        if self.dial_location - n_clicks >= 0 {
-            self.dial_location = self.dial_location - n_clicks
-        } else {
-            self.dial_location = (self.dial_location - n_clicks).rem_euclid(99) + 1
-        }
+        self.dial_location = (self.dial_location - n_clicks).rem_euclid(100)
     }
 
     pub fn turn_dial(&mut self, dt: &DialTurn) {
@@ -118,7 +110,7 @@ mod tests {
         let mut d: Dial = Dial::new(50);
         let instructions: Vec<String> = get_input_instructions("data/test_input.txt");
 
-        let parsed_instructuctions: Vec<DialTurn> = instructions
+        let parsed_instructions: Vec<DialTurn> = instructions
             .iter()
             .map(|v| {
                 v.parse::<DialTurn>()
@@ -126,6 +118,6 @@ mod tests {
             })
             .collect();
 
-        assert_eq!(3, get_real_password(&mut d, parsed_instructuctions))
+        assert_eq!(3, get_real_password(&mut d, parsed_instructions))
     }
 }
