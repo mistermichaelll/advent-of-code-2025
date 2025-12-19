@@ -11,6 +11,7 @@ pub struct Dial {
 
 #[derive(Debug, Clone, Copy)]
 pub struct DialTurn {
+    // represents a turn of the dial for n clicks in a given direction.
     direction: Direction,
     n_clicks: i64,
 }
@@ -70,13 +71,23 @@ impl Dial {
     }
 
     pub fn turn_dial(&mut self, dt: &DialTurn) {
+        // turn the dial in a given direction for the provided clicks.
         match dt.direction {
             Direction::Right => self.turn_right(dt.n_clicks),
             Direction::Left => self.turn_left(dt.n_clicks),
         }
     }
 
-    pub fn click_passes_zero(&mut self, dt: &DialTurn) -> i64 {
+    pub fn dial_turn_lands_on_zero(&mut self, dt: &DialTurn) -> bool {
+        self.turn_dial(dt);
+        return self.dial_location == 0;
+    }
+
+    pub fn n_dial_turn_passes_zero(&mut self, dt: &DialTurn) -> i64 {
+        // the second part of day 1 asks us to count the times that the dial passes 0 on any given turn.
+        // this implementation is perhaps not elegant, but essentially we just enumerate each click as a
+        // dial turn like we previously implemented. then, we can use the previously defined method
+        // for checking whether this turn has landed on zero. we collect those into a vector and take the sum.
         let enumerated_turns: Vec<DialTurn> =
             vec![
                 DialTurn::new(dt.direction, 1);
@@ -85,10 +96,7 @@ impl Dial {
 
         enumerated_turns
             .iter()
-            .filter(|dt| {
-                self.turn_dial(dt);
-                self.dial_location == 0
-            })
+            .filter(|dt| self.dial_turn_lands_on_zero(dt))
             .count() as i64
     }
 }
@@ -96,21 +104,21 @@ impl Dial {
 pub fn get_real_password(d: &mut Dial, dial_turns: Vec<DialTurn>) -> i64 {
     dial_turns
         .iter()
-        .filter(|dt| {
-            d.turn_dial(dt);
-            d.dial_location == 0
-        })
+        .filter(|dt| d.dial_turn_lands_on_zero(dt))
         .count() as i64
 }
 
 pub fn get_new_password_version(d: &mut Dial, dial_turns: Vec<DialTurn>) -> i64 {
-    dial_turns.iter().map(|x| d.click_passes_zero(x)).sum()
+    dial_turns
+        .iter()
+        .map(|x| d.n_dial_turn_passes_zero(x))
+        .sum()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::instructions::{get_input_instructions, parse_instructions};
+    use crate::instructions::parse_instructions;
 
     #[test]
     fn test_example_from_site() {
